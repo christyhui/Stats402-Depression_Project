@@ -1,0 +1,310 @@
+---
+title: "Depression Draft 1"
+author: "Christy Hui"
+date: "2024-11-30"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(caret)
+library(ROCR)
+```
+
+```{r}
+depression = read.csv("final_depression_dataset_1.csv")
+```
+
+```{r}
+# find the dimension of depression
+dim(depression)
+```
+
+```{r}
+# find if there exist duplicates
+sum(duplicated(depression))
+```
+
+```{r}
+# find number of NAs for each column
+sapply(depression, function(x) {sum(is.na(x))})
+```
+
+```{r}
+# delete columns with NAs
+depression = depression[, -c(7:11)]
+sapply(depression, function(x) {sum(is.na(x))})
+```
+
+```{r}
+# due to a large amount of varied answers for "City" and "Profession," we delete the variables
+# we also delete name because we don't care about that variable
+unique(depression$City)
+unique(depression$Profession)
+
+depression = subset(depression, select = -c(Name, City, Profession))
+```
+
+```{r}
+# degree has many varied answers as well; however, they can be recoded into three main categories: high school equivalent, bachelors, masters, PhD
+unique(depression$Degree)
+```
+
+```{r}
+depression$Degree = case_when(depression$Degree == "Class 12" ~ "High School Equivalent",
+                              grepl("^[BL]", depression$Degree) ~ "Bachelors Degree",
+                              grepl("^[MP]", depression$Degree) ~ "Post-Graduate Degree")
+
+table(depression$Degree)
+```
+
+```{r}
+# find type of each variable so we can change each type
+sapply(depression, function(x) {class(x)})
+```
+
+```{r}
+# change each categorical into a factor, changing the base/ordering them if needed
+depression$Gender = as.factor(depression$Gender)
+depression$Working.Professional.or.Student = as.factor(depression$Working.Professional.or.Student)
+depression$Sleep.Duration = factor(depression$Sleep.Duration, levels = c("Less than 5 hours", "5-6 hours", "7-8 hours", "More than 8 hours", ordered = TRUE))
+depression$Dietary.Habits = factor(depression$Dietary.Habits, levels = c("Unhealthy", "Moderate", "Healthy"))
+depression$Degree = factor(depression$Degree, levels = c("High School Equivalent", "Bachelors Degree", "Post-Graduate Degree"))
+depression$Have.you.ever.had.suicidal.thoughts.. = as.factor(depression$Have.you.ever.had.suicidal.thoughts..)
+depression$Financial.Stress = factor(depression$Financial.Stress, levels = c(1, 2, 3, 4, 5))
+depression$Family.History.of.Mental.Illness = as.factor(depression$Family.History.of.Mental.Illness)
+depression$Depression = as.factor(depression$Depression)
+```
+
+```{r}
+depressionFactored = select(depression, where(is.factor))
+sapply(depressionFactored, table)
+```
+
+# IF YOU WANT TO CHANGE THE COLOR, PLEASE USE THESE TWO LINKS:
+
+https://sape.inf.usi.ch/quick-reference/ggplot2/colour
+
+https://www.rapidtables.com/web/color/RGB_Color.html
+
+```{r}
+# plot depression count
+ggplot(depression, aes(x = Depression)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Depression") +
+  ylab("Count") +
+  ggtitle("Barplot of Depression") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+# plot gender
+ggplot(depression, aes(x = Gender)) + 
+  geom_bar(aes(fill = Depression)) + 
+  ylab("Count")
+  ggtitle("Barplot of Gender") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+# plot whether or not person is a working professional or student
+ggplot(depression, aes(x = Working.Professional.or.Student)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Occupation") +
+  ylab("Count") +
+  ggtitle("Barplot of Professional/Student") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+# plot sleep duration habits
+ggplot(depression, aes(x = Sleep.Duration)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Sleep Duration") +
+  ylab("Count") +
+  ggtitle("Barplot of Sleep Duration") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+# plot dietary habits
+ggplot(depression, aes(x = Dietary.Habits)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Dietary Habits") +
+  ylab("Count") +
+  ggtitle("Barplot of Dietary Habits") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+# plot degree count
+ggplot(depression, aes(x = Degree)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Degree") +
+  ylab("Count") +
+  ggtitle("Barplot of Degree") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+# plot degree count
+ggplot(depression, aes(x = Have.you.ever.had.suicidal.thoughts..)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Suicidal Thoughts") +
+  ylab("Count") +
+  ggtitle("Barplot of Suicidal Thoughts") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+# plot financial stress count
+ggplot(depression, aes(x = Financial.Stress)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Financial Stress Score") +
+  ylab("Count") +
+  ggtitle("Barplot of Financial Stress Score") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+# plot family history of mental illness count
+ggplot(depression, aes(x = Family.History.of.Mental.Illness)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Mental Illness Family History") +
+  ylab("Count") +
+  ggtitle("Barplot of Mental Illness Family History") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+depressionYes = depression[depression$Depression == "Yes", ]
+depressionNo = depression[depression$Depression == "No", ]
+```
+
+```{r}
+p1 = ggplot(depressionYes, aes(x = Age, y = after_stat(density))) +
+  geom_histogram(binwidth = 1, fill="#69B3A2", color = "#E9ECEF") +
+  geom_density(color = "#FF9933", linewidth = 0.7, adjust = 0.3) + 
+  ggtitle("Frequency of Age of Depressed Yes") +
+  ylab("Frequency")
+
+p2 = ggplot(depressionNo, aes(x = Age, y = after_stat(density))) +
+  geom_histogram(binwidth = 1, fill="#69B3A2", color = "#E9ECEF") +
+  geom_density(color = "#FF9933", linewidth = 0.7, adjust = 0.3) + 
+  ggtitle("Frequency of Age of Depressed No") +
+  ylab("Frequency")
+```
+
+```{r}
+plot_grid(p1, p2)
+```
+
+```{r}
+p3 = ggplot(depressionYes, aes(x = Work.Study.Hours, y = after_stat(density))) +
+  geom_histogram(binwidth = 1, fill="#69B3A2", color = "#E9ECEF") +
+  geom_density(color = "#FF9933", linewidth = 0.7, adjust = 1) + 
+  ggtitle("Frequency of Hours Spent Working/Studying of Depressed Yes") +
+  xlab("Hours Spent Working/Studying") +
+  ylab("Frequency")
+
+p4 = ggplot(depressionNo, aes(x = Work.Study.Hours, y = after_stat(density))) +
+  geom_histogram(binwidth = 1, fill="#69B3A2", color = "#E9ECEF") +
+  geom_density(color = "#FF9933", linewidth = 0.7, adjust = 1) + 
+  ggtitle("Frequency of Hours Spent Working/Studying of Depressed No") +
+  xlab("Hours Spent Working/Studying") +
+  ylab("Frequency")
+```
+
+```{r}
+plot_grid(p3, p4)
+```
+
+```{r}
+# create train and test set
+set.seed(213)
+index = createDataPartition(depression$Depression, p = 0.80, list = FALSE, times = 1)
+depression_train = depression[index,]
+depression_test = depression[-index,]
+```
+
+```{r}
+# create model with all predictors (no interaction effects)
+depression_glm = glm(Depression ~ ., data = depression_train, family = "binomial")
+summary(depression_glm)
+```
+
+```{r}
+# draw a roc curve for true positive rate and true negative rate to find the optimal cutoff
+glm_predictions = predict(depression_glm, newdata = depression_test, type = "response")
+prob_predictions = prediction(glm_predictions, depression_test$Depression)
+roc_curve = performance(prob_predictions, "tpr", "fpr")
+plot(roc_curve, colorize = TRUE)
+abline(0, 1)
+```
+
+```{r}
+# auc value
+unlist(slot(performance(prob_predictions, "auc"), "y.values"))
+```
+
+```{r}
+acc = performance(prob_predictions, "acc")
+plot(acc)
+abline(0, 1)
+```
+
+```{r}
+glm_predictions2 = predict(depression_glm, newdata = depression_test)
+glm_predictions2 = ifelse(glm_predictions2 > 0.30, "Yes", "No")
+glm_predictions2 = as.factor(glm_predictions2)
+confusionMatrix(glm_predictions2, depression_test$Depression)
+```
+
+```{r}
+train_control = trainControl(method = "repeatedcv", number = 10, repeats = 3, classProbs = TRUE)
+depression_cvglm = train(Depression ~ .,
+                         data = depression_train,
+                         method = "glm",
+                         family = binomial,
+                         trControl = train_control)
+```
+
+```{r}
+depression_cvglm$results
+```
+
+```{r}
+cvglm_predictions = predict(depression_cvglm, depression_test)
+confusionMatrix(cvglm_predictions, depression_test$Depression)
+```
+
+```{r}
+varImp(depression_cvglm)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
