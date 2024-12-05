@@ -34,6 +34,23 @@ sum(duplicated(depression))
 # find number of NAs for each column
 sapply(depression, function(x) {sum(is.na(x))})
 ```
+```{r}
+# combine pressure columns into one
+helper1 = ifelse(is.na(depression$Academic.Pressure), 0, depression$Academic.Pressure)
+
+helper2 = ifelse(is.na(depression$Work.Pressure), 0, depression$Work.Pressure)
+
+depression$Pressure = helper1+helper2
+```
+
+```{r}
+# combine satisfaction into one column
+helper3 = ifelse(is.na(depression$Study.Satisfaction), 0, depression$Study.Satisfaction)
+
+helper4 = ifelse(is.na(depression$Job.Satisfaction), 0, depression$Job.Satisfaction)
+
+depression$Satisfaction = helper3 + helper4
+```
 
 ```{r}
 # delete columns with NAs
@@ -79,6 +96,8 @@ depression$Have.you.ever.had.suicidal.thoughts.. = as.factor(depression$Have.you
 depression$Financial.Stress = factor(depression$Financial.Stress, levels = c(1, 2, 3, 4, 5))
 depression$Family.History.of.Mental.Illness = as.factor(depression$Family.History.of.Mental.Illness)
 depression$Depression = as.factor(depression$Depression)
+depression$Pressure = factor(depression$Pressure, levels = c(1, 2, 3, 4, 5))
+depression$Satisfaction = factor(depression$Satisfaction, levels = c(1, 2, 3, 4, 5))
 ```
 
 ```{r}
@@ -162,6 +181,16 @@ ggplot(depression, aes(x = Have.you.ever.had.suicidal.thoughts..)) +
 ```
 
 ```{r}
+# variables look highly correlated, especially when we plot a table of depression and suicidal thoughts
+table(depression$Have.you.ever.had.suicidal.thoughts.., depression$Depression)
+```
+
+```{r}
+# delete suicidal thoughts variable
+depression = subset(depression, select = -c(Have.you.ever.had.suicidal.thoughts..))
+```
+
+```{r}
 # plot financial stress count
 ggplot(depression, aes(x = Financial.Stress)) + 
   geom_bar(aes(fill = Depression)) + 
@@ -178,6 +207,24 @@ ggplot(depression, aes(x = Family.History.of.Mental.Illness)) +
   xlab("Mental Illness Family History") +
   ylab("Count") +
   ggtitle("Barplot of Mental Illness Family History") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+ggplot(depression, aes(x = Pressure)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Financial Stress Score") +
+  ylab("Count") +
+  ggtitle("Barplot of Pressure Score") + 
+  geom_text(aes(label = ..count..), stat = "count", vjust = 2)
+```
+
+```{r}
+ggplot(depression, aes(x = Satisfaction)) + 
+  geom_bar(aes(fill = Depression)) + 
+  xlab("Satisfaction Score") +
+  ylab("Count") +
+  ggtitle("Barplot of Pressure Score") + 
   geom_text(aes(label = ..count..), stat = "count", vjust = 2)
 ```
 
