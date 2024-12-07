@@ -319,39 +319,39 @@ summary(glm(Depression ~ Gender*., data = depression_train, family = "binomial")
 ```
 
 ```{r}
-summary(glm(Depression ~ Working.Professional.or.Student*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Working.Professional.or.Student*., data = depression_train, family = "binomial"))
 ```
 
 ```{r}
-summary(glm(Depression ~ Sleep.Duration*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Sleep.Duration*., data = depression_train, family = "binomial"))
 ```
 
 ```{r}
-summary(glm(Depression ~ Dietary.Habits*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Dietary.Habits*., data = depression_train, family = "binomial"))
 ```
 
 ```{r}
-summary(glm(Depression ~ Degree*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Degree*., data = depression_train, family = "binomial"))
 ```
 
 ```{r}
-summary(glm(Depression ~ Work.Study.Hours*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Work.Study.Hours*., data = depression_train, family = "binomial"))
 ```
 
 ```{r}
-summary(glm(Depression ~ Financial.Stress*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Financial.Stress*., data = depression_train, family = "binomial"))
 ```
 
 ```{r}
-summary(glm(Depression ~ Family.History.of.Mental.Illness*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Family.History.of.Mental.Illness*., data = depression_train, family = "binomial"))
 ```
 
 ```{r}
-summary(glm(Depression ~ Pressure*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Pressure*., data = depression_train, family = "binomial"))
 ```
 
 ```{r}
-summary(glm(Depression ~ Satisfaction*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Satisfaction*., data = depression_train, family = "binomial"))
 ```
 
 None of the interaction effects were meaningfully significant; we will not be adding interaction effects to our model.
@@ -398,23 +398,6 @@ paste("First Model Residual Deviance: ", depression_glm$deviance)
 paste("Second Model Residual Deviance: ", depression_glm2$deviance)
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```{r}
 train_control = trainControl(method = "repeatedcv", number = 10, repeats = 3, classProbs = TRUE)
 depression_cvglm = train(Depression ~ .,
@@ -458,8 +441,6 @@ confusionMatrix(cvglm_predictions2, depression_test$Depression)
 ```{r}
 varImp(depression_cvglm2)
 ```
-
-
 
 
 
