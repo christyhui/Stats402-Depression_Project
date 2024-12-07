@@ -315,7 +315,7 @@ confusionMatrix(glm_predictions2, depression_test$Depression)
 
 ```{r}
 # create models for interaction effects of each categorical variable and see if there are any significant
-summary(glm(Depression ~ Gender*., data = depression_train, family = "binomial"))
+# summary(glm(Depression ~ Gender*., data = depression_train, family = "binomial"))
 ```
 
 ```{r}
