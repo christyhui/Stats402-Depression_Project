@@ -34,13 +34,14 @@ sum(duplicated(depression))
 # find number of NAs for each column
 sapply(depression, function(x) {sum(is.na(x))})
 ```
+
 ```{r}
 # combine pressure columns into one
 helper1 = ifelse(is.na(depression$Academic.Pressure), 0, depression$Academic.Pressure)
 
 helper2 = ifelse(is.na(depression$Work.Pressure), 0, depression$Work.Pressure)
 
-depression$Pressure = helper1+helper2
+depression$Pressure = helper1 + helper2
 ```
 
 ```{r}
@@ -313,6 +314,108 @@ confusionMatrix(glm_predictions2, depression_test$Depression)
 ```
 
 ```{r}
+# create models for interaction effects of each categorical variable and see if there are any significant
+summary(glm(Depression ~ Gender*., data = depression_train, family = "binomial"))
+```
+
+```{r}
+summary(glm(Depression ~ Working.Professional.or.Student*., data = depression_train, family = "binomial"))
+```
+
+```{r}
+summary(glm(Depression ~ Sleep.Duration*., data = depression_train, family = "binomial"))
+```
+
+```{r}
+summary(glm(Depression ~ Dietary.Habits*., data = depression_train, family = "binomial"))
+```
+
+```{r}
+summary(glm(Depression ~ Degree*., data = depression_train, family = "binomial"))
+```
+
+```{r}
+summary(glm(Depression ~ Work.Study.Hours*., data = depression_train, family = "binomial"))
+```
+
+```{r}
+summary(glm(Depression ~ Financial.Stress*., data = depression_train, family = "binomial"))
+```
+
+```{r}
+summary(glm(Depression ~ Family.History.of.Mental.Illness*., data = depression_train, family = "binomial"))
+```
+
+```{r}
+summary(glm(Depression ~ Pressure*., data = depression_train, family = "binomial"))
+```
+
+```{r}
+summary(glm(Depression ~ Satisfaction*., data = depression_train, family = "binomial"))
+```
+
+None of the interaction effects were meaningfully significant; we will not be adding interaction effects to our model.
+
+```{r}
+vI = cbind(varImp(depression_glm), summary(depression_glm)$coefficients[-1, c(1, 4)])
+vI[order(-vI$Overall), , drop = FALSE]
+```
+
+```{r}
+depression_glm2 = glm(Depression ~ Age + Pressure + Satisfaction + Work.Study.Hours + Financial.Stress, data = depression_train, family = "binomial")
+summary(depression_glm2)
+```
+
+```{r}
+# draw a roc curve for true positive rate and true negative rate to find the optimal cutoff
+glm_predictions3 = predict(depression_glm2, newdata = depression_test, type = "response")
+prob_predictions2 = prediction(glm_predictions3, depression_test$Depression)
+roc_curve2 = performance(prob_predictions, "tpr", "fpr")
+plot(roc_curve2, colorize = TRUE)
+abline(0, 1)
+```
+
+```{r}
+# auc value
+unlist(slot(performance(prob_predictions2, "auc"), "y.values"))
+```
+
+```{r}
+acc2 = performance(prob_predictions2, "acc")
+plot(acc2)
+abline(0, 1)
+```
+
+```{r}
+glm_predictions4 = predict(depression_glm2, newdata = depression_test)
+glm_predictions4 = ifelse(glm_predictions4 > 0.35, "Yes", "No")
+glm_predictions4 = as.factor(glm_predictions4)
+confusionMatrix(glm_predictions4, depression_test$Depression)
+```
+
+```{r}
+paste("First Model Residual Deviance: ", depression_glm$deviance)
+paste("Second Model Residual Deviance: ", depression_glm2$deviance)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
 train_control = trainControl(method = "repeatedcv", number = 10, repeats = 3, classProbs = TRUE)
 depression_cvglm = train(Depression ~ .,
                          data = depression_train,
@@ -334,9 +437,27 @@ confusionMatrix(cvglm_predictions, depression_test$Depression)
 varImp(depression_cvglm)
 ```
 
+```{r}
+train_control2 = trainControl(method = "repeatedcv", number = 10, repeats = 3, classProbs = TRUE)
+depression_cvglm2 = train(Depression ~ Age + Pressure + Satisfaction + Work.Study.Hours + Financial.Stress,
+                         data = depression_train,
+                         method = "glm",
+                         family = binomial,
+                         trControl = train_control2)
+```
 
+```{r}
+depression_cvglm2$results
+```
 
+```{r}
+cvglm_predictions2 = predict(depression_cvglm2, depression_test)
+confusionMatrix(cvglm_predictions2, depression_test$Depression)
+```
 
+```{r}
+varImp(depression_cvglm2)
+```
 
 
 
