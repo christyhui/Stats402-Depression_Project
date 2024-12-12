@@ -98,7 +98,7 @@ sapply(depression, function(x) {class(x)})
 # change each categorical into a factor, changing the base/ordering them if needed
 depression$Gender = as.factor(depression$Gender)
 depression$Working.Professional.or.Student = as.factor(depression$Working.Professional.or.Student)
-depression$Sleep.Duration = factor(depression$Sleep.Duration, levels = c("Less than 5 hours", "5-6 hours", "7-8 hours", "More than 8 hours"), ordered = TRUE)
+depression$Sleep.Duration = factor(depression$Sleep.Duration, levels = c("Less than 5 hours", "5-6 hours", "7-8 hours", "More than 8 hours"))
 depression$Dietary.Habits = factor(depression$Dietary.Habits, levels = c("Unhealthy", "Moderate", "Healthy"))
 depression$Degree = factor(depression$Degree, levels = c("High School Equivalent", "Bachelors Degree", "Post-Graduate Degree"))
 depression$Have.you.ever.had.suicidal.thoughts.. = as.factor(depression$Have.you.ever.had.suicidal.thoughts..)
