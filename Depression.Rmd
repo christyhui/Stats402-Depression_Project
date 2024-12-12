@@ -498,6 +498,11 @@ plot_model(depression_glm, title = "Depression - First Model")
 plot_model(depression_glm2, title = "Depression - Second Model")
 ```
 
+```{r}
+depression_train$predicted_prob <- predict(depression_glm, type = "response")
+interaction.plot(depression_train$Age, depression_train$Pressure, depression_train$predicted_prob)
+```
+
 $$
 \text{logit}(p) = 1.538 - 0.235 * Age + 0.977 * Pressure - 0.737 * Satisfaction + 0.218 * Work.Study.Hours + 0.590 * Financial.Stress
 $$
