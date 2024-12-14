@@ -346,7 +346,7 @@ abline(0, 1)
 ```
 
 ```{r}
-glm_predictions2 = predict(depression_glm, newdata = depression_test)
+glm_predictions2 = predict(depression_glm, newdata = depression_test, type = "response")
 glm_predictions2 = ifelse(glm_predictions2 > 0.35, "Yes", "No")
 glm_predictions2 = as.factor(glm_predictions2)
 confusionMatrix(glm_predictions2, depression_test$Depression)
@@ -428,7 +428,7 @@ abline(0, 1)
 ```
 
 ```{r}
-glm_predictions4 = predict(depression_glm2, newdata = depression_test)
+glm_predictions4 = predict(depression_glm2, newdata = depression_test, type = "response")
 glm_predictions4 = ifelse(glm_predictions4 > 0.35, "Yes", "No")
 glm_predictions4 = as.factor(glm_predictions4)
 confusionMatrix(glm_predictions4, depression_test$Depression)
